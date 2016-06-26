@@ -5,6 +5,8 @@ this extension to Visual studio code.
 
 ## Usage
 
+Type abbrevation using [emmet](http://docs.emmet.io/abbreviations/) syntax, press `tab`, and the content will be replaced to HTML.
+
 ![Use Extension](images/use-extension.gif)
 
 ## Features
