@@ -4,6 +4,16 @@
   "description": "Support zen-coding syntax for Angular 2 typescript files.",
   "version": "0.0.1",
   "publisher": "jakethashi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jakethashi/vscode-angular2-emmet.git"    
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.githubusercontent.com/jakethashi/vscode-angular2-emmet/master/LICENSE.md"
+    }
+  ],
   "engines": {
     "vscode": "^1.0.0"
   },
