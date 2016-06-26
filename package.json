@@ -1,13 +1,13 @@
 {
     "name": "vscode-angular2-emmet",
-    "displayName": "vscode-angular2-emmet",
+    "displayName": "Angular 2 TypeScript Emmet",
     "description": "Support zen-coding syntax for Angular 2 typescript files.",
     "icon": "images/angular-logo.png",
     "galleryBanner": {
         "color": "#0273D4",
         "theme": "dark"
     },
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "jakethashi",
     "repository": {
         "type": "git",
