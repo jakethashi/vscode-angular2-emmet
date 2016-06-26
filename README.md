@@ -1,6 +1,6 @@
 # Angular 2 TypeScript Emmet suport for VS Code
 
-Have you ever missed vscode zen coding support for Angular 2 typescript. If is you answer yes than enjoy 
+Have you ever missed vscode zen coding support for Angular 2 typescript. If is you answer yes then enjoy 
 this extension to Visual studio code.
 
 ## Installation
