@@ -25,6 +25,12 @@
     "categories": [
         "Languages"
     ],
+    "keywords": [
+        "Angular 2",
+        "TypeScript",
+        "Emmet",
+        "Zen-coding"
+      ],
     "activationEvents": [
         "*"
     ],
