@@ -9,4 +9,4 @@ this extension to Visual studio code.
 
 ## Features
 
-Replace template abbreviation inside Component decorator.
+Replace abbreviation inside template property of Component decorator.
