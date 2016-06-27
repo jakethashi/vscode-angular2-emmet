@@ -19,20 +19,20 @@ suite("Extension Tests", () => {
 
     // Defines a Mocha unit test
     test("open test case", (done) => {
-        vscode.workspace.openTextDocument(path.join(__dirname, '..', '..', 'test/app.component.ts')).then((document) => {
-	        let emmetAction = new EmmetActions(vscode.window.activeTextEditor);
-			emmetAction.textEditor.selection = new vscode.Selection(new vscode.Position(10, 27), new vscode.Position(10, 27));
-			//vscode.Te 
-			//emmetAction.textEditor.document =  document;
+        // vscode.workspace.openTextDocument(path.join(__dirname, '..', '..', 'test/app.component.ts')).then((document) => {
+	    //     let emmetAction = new EmmetActions(vscode.window.activeTextEditor);
+		// 	emmetAction.textEditor.selection = new vscode.Selection(new vscode.Position(10, 27), new vscode.Position(10, 27));
+		// 	//vscode.Te 
+		// 	//emmetAction.textEditor.document =  document;
 	
-			emmetAction.emmetMe();
+		// 	emmetAction.emmetMe();
 
-			//assert.equal(testWordCounter._getWordCount(document), 254);
-			assert.equal(1, 1);
-			done();
-		}, (error) => {
-			assert.fail(error);
-			done();
-		});
+		// 	//assert.equal(testWordCounter._getWordCount(document), 254);
+		// 	assert.equal(1, 1);
+		// 	done();
+		// }, (error) => {
+		// 	assert.fail(error);
+		// 	done();
+		// });
     });
 });
