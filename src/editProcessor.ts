@@ -7,6 +7,7 @@ export interface ILineInfo {
     abbr?: string;
     selection: vscode.Selection;
     abbrStartAt?: number;
+    angularInfo: IAngularInfo;
 }
 
 /**
@@ -19,11 +20,20 @@ enum Directions {
 } 
 
 /**
- * Contains row and column of found item.
+ * Contains row, column and matcher of found item.
  */
 interface ILineFinding {
     line: number;
-    position: number
+    position: number;
+    matcher: string;
+}
+
+/**
+ * Holds information related with analyzing of the line which contains abbreviation.
+ */
+interface IAngularInfo {
+    insideComponentDecorator: boolean;
+    isTemplateLiteral?: boolean;
 }
 
 /**
@@ -55,13 +65,15 @@ export class EditProcessor {
      * Get information for current line 
      */
     private getContentInfo() : ILineInfo {
-        var lineSelection = this._editor.selection.with(new vscode.Position(this._editor.selection.start.line, 0), this._editor.selection.end);
+        let lineSelection = this._editor.selection.with(new vscode.Position(this._editor.selection.start.line, 0), this._editor.selection.end);
         let lineContent = this._editor.document.getText(lineSelection);
-        var abbr = lineContent.split(' ').slice(-1)[0];
-        
-        if (!this.isInsideAngularComponent()) {            
+        let abbr = lineContent.split(' ').slice(-1)[0];        
+        let angularInfo = this.getAngularInfo();
+
+        if (!angularInfo.insideComponentDecorator) {            
             return {
-                selection: this._editor.selection
+                selection: this._editor.selection,
+                angularInfo: angularInfo
             }
         }
 
@@ -74,7 +86,8 @@ export class EditProcessor {
         return {
             abbr: abbr,
             selection: this._editor.selection,
-            abbrStartAt: this._editor.selection.start.character - abbr.length
+            abbrStartAt: this._editor.selection.start.character - abbr.length,
+            angularInfo: angularInfo
         }
     }
 
@@ -82,9 +95,15 @@ export class EditProcessor {
      * Alter emmet's generated content into approprite form, considers editor tabs options, which suits to current document.
      *      
      * @param content Result from emmet transformation.
+     * @param lineInfo Information about line.
      * @return An formated text ready to paste into document. 
      */
-    sanitizeContent(content: string): string {
+    sanitizeContent(content: string, lineInfo: ILineInfo): string {
+        // remove all lines in case we are not inside template literal
+        if (!lineInfo.angularInfo.isTemplateLiteral) {
+            return content.replace(/[\n|\t]/g, '');
+        }
+
         let tabSize = Number(this._editor.options.tabSize);
         let tabCount = (this.lineInfo.abbrStartAt / tabSize);
         let tabs = this.createSpaces((tabSize * tabCount) - tabSize);
@@ -98,6 +117,7 @@ export class EditProcessor {
             }
         }
 
+
         return result;        
     }
 
@@ -108,8 +128,7 @@ export class EditProcessor {
      * @return Representation of html syntax 
      */
     private sanitizeAbbreviation(abbr: string): string {
-        abbr = abbr.replace(/\'/, '');
-        abbr = abbr.replace('`', '');
+        abbr = abbr.replace(/[\'|"|`]/, '');
         abbr = abbr.replace(/(< ([^>]+)<)/g, '').replace(/\s+/g, ' ');
         abbr = abbr.replace(/^\s\s*/, '').replace(/\s\s*$/, '');     
         return abbr;
@@ -128,8 +147,7 @@ export class EditProcessor {
 
         for (let i = this._editor.selection.start.line; t ? i >= 0 : i < this._editor.document.lineCount; t ? i-- : i++) {
             let currentLine = this._editor.document.lineAt(i).text;
-            let line = -1;
-            let position = -1;
+            let foundItem: ILineFinding;
 
             if (i === this._editor.selection.start.line && !t) {
                 currentLine = currentLine.substring(this._editor.selection.start.character);
@@ -139,27 +157,27 @@ export class EditProcessor {
                 let currentPosition = currentLine.indexOf(token); 
 
                 if (~currentPosition) {
-                    line = i;
-                    position = currentPosition;
+                    foundItem = {
+                        line: i,
+                        position: currentPosition,
+                        matcher: token
+                    }
                     return;
                 }
             });
-            if (~line) {
-                return {
-                    line: line,
-                    position: position
-                };
+            if (foundItem) {
+                return foundItem;
             }
         }
         return null;
     }
 
     /**
-     * Return flag whther an abbreviation is surrounded with component decorator and is wrapped by any kind of quotes.
+     * Return matadata to determine whther an abbreviation is surrounded with component decorator and is wrapped by any kind of quotes.
      *      
-     * @return True if an abbreviation could be transformed. 
+     * @return metadata related to Angular of analyzing an abbreviation. 
      */
-    private isInsideAngularComponent(): boolean {
+    private getAngularInfo(): IAngularInfo {
         let isMultiline = this._editor.selection.end.line - this._editor.selection.start.line > 1;
 
         if (!isMultiline) {
@@ -175,32 +193,48 @@ export class EditProcessor {
                 let sEnd = this.findLine(['\'', '"', '`'], Directions.bottom);
 
                 if (!sStart || !sEnd) {
-                    return false;
+                    return {
+                        insideComponentDecorator: false
+                    };
                 }
+                let isTemplateLiteral = sStart.matcher === '`';
 
                 // start and and in different
                 if (sStart.line < this._editor.selection.start.line && sEnd.line > this._editor.selection.start.line) {
-                    return true;
+                    return {
+                        insideComponentDecorator: true,
+                        isTemplateLiteral: isTemplateLiteral
+                    };
                 }
                 // start at same but current position is after sign
                 if (sStart.line === this._editor.selection.start.line && sStart.position < this._editor.selection.start.character) {
-                    return true;
+                    return {
+                        insideComponentDecorator: true,
+                        isTemplateLiteral: isTemplateLiteral
+                    };
                 }
 
                 // end at same but current position is before sign
                 if (sEnd.line === this._editor.selection.start.line && sEnd.position >= this._editor.selection.start.character) {
-                    return true;
+                    return {
+                        insideComponentDecorator: true,
+                        isTemplateLiteral: isTemplateLiteral
+                    };
                 }
 
                 // start and end at same
                 if (sEnd.line === this._editor.selection.start.line && sEnd.position < this._editor.selection.start.character) {
-                    return true;
+                    return {
+                        insideComponentDecorator: true,
+                        isTemplateLiteral: isTemplateLiteral
+                    };
                 }
             }
-            return false;
         }
 
-        return false;
+        return {
+            insideComponentDecorator: false
+        }
     }
 
     /**
@@ -229,7 +263,7 @@ export class EditProcessor {
     addTab(li: ILineInfo): void {
         var tabs = this.createSpaces();
         this._editor.edit(editBuilder => {
-            if (li.selection.end.line - li.selection.start.line > 1) {
+            if (li.selection.end.line - li.selection.start.line >= 1) {
                 for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
                     editBuilder.insert(new vscode.Position(i, 0), tabs);
                 }

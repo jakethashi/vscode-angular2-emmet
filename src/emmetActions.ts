@@ -43,7 +43,7 @@ export class EmmetActions {
                 let options = { syntax: 'html' };
 
                 let content = parser.expand(lineInfo.abbr, options);                
-                content = this.editProcessor.sanitizeContent(content);
+                content = this.editProcessor.sanitizeContent(content, lineInfo);
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
                         return data.placeholder || '';
