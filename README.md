@@ -1,7 +1,6 @@
 # Angular 2 TypeScript Emmet suport for VS Code
 
-Have you ever missed zen coding support for Angular 2 typescript files inside vscode? If is your answer yes then 
-following extension to Visual Studio Code solve you issue.
+Have you ever missed zen coding support for Angular 2 typescript files inside vscode? If is your answer yes then following extension to Visual Studio Code solve you issue.
 
 ## Installation
 
@@ -14,8 +13,7 @@ following extension to Visual Studio Code solve you issue.
 
 ## Usage
 
-Type abbrevation using [emmet](http://docs.emmet.io/abbreviations/) syntax, press `tab`, and the content will be 
-replaced by HTML content.
+Type abbreviation using [emmet](http://docs.emmet.io/abbreviations/) syntax, press `tab`, and the abbreviation will be replaced by HTML content.
 
 ![Use Extension](images/use-extension.gif)
 

@@ -39,7 +39,7 @@ export class EmmetActions {
 
         if (this.textEditor.document.languageId === this.lang) {
             try {
-                // try to get content from abbrevation
+                // try to get content from abbreviation
                 let options = { syntax: 'html' };
 
                 let content = parser.expand(lineInfo.abbr, options);                

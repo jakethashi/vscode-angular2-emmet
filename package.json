@@ -7,7 +7,7 @@
         "color": "#0273D4",
         "theme": "dark"
     },
-    "version": "0.0.5",
+    "version": "0.0.8",
     "publisher": "jakethashi",
     "repository": {
         "type": "git",
@@ -30,7 +30,7 @@
         "TypeScript",
         "Emmet",
         "Zen-coding"
-      ],
+    ],
     "activationEvents": [
         "*"
     ],
