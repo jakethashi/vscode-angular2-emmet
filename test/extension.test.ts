@@ -14,25 +14,43 @@ import * as myExtension from '../src/extension';
 import { EmmetActions } from '../src/emmetActions';
 
 // Defines a Mocha test suite to group tests of similar kind together
+
 suite("Extension Tests", () => {
 
+	test("open test case", (done) => {
+		setTimeout(() => {
+			let emmetAction = new EmmetActions(vscode.window.activeTextEditor);
+			
+			let abbr1 = 'ul>li*3';
+			let expectedResponse = '<ul>                    <li></li>                    <li></li>                    <li></li>                </ul>';
+			emmetAction.editProcessor.setText(abbr1, new vscode.Position(10, 16));
 
-    // Defines a Mocha unit test
-    test("open test case", (done) => {
-        // vscode.workspace.openTextDocument(path.join(__dirname, '..', '..', 'test/app.component.ts')).then((document) => {
-	    //     let emmetAction = new EmmetActions(vscode.window.activeTextEditor);
-		// 	emmetAction.textEditor.selection = new vscode.Selection(new vscode.Position(10, 27), new vscode.Position(10, 27));
-		// 	//vscode.Te 
-		// 	//emmetAction.textEditor.document =  document;
+		    setTimeout(() => {
+				emmetAction.textEditor.selection = new vscode.Selection(new vscode.Position(10, 23), new vscode.Position(10, 23));
+
+				setTimeout(() => {
+					emmetAction.emmetMe();
+
+					setTimeout(() => {
+						var selection = new vscode.Selection(
+							new vscode.Position(10, 16), 
+							new vscode.Position(14, 21)
+						);
+						var response = emmetAction.editProcessor.getText(selection);
+						
+						assert.equal(response, expectedResponse);
+
+						done();
+					}, 2000);
+				}, 1000);
+			}, 1000);
+			
+		}, 1500);
+
+
+	});
+
 	
-		// 	emmetAction.emmetMe();
+    // Defines a Mocha unit test
 
-		// 	//assert.equal(testWordCounter._getWordCount(document), 254);
-		// 	assert.equal(1, 1);
-		// 	done();
-		// }, (error) => {
-		// 	assert.fail(error);
-		// 	done();
-		// });
-    });
 });

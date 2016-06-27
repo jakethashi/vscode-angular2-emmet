@@ -13,8 +13,11 @@ var parser = require('emmet/lib/parser/abbreviation');
  */
 export class EmmetActions {
     lang = 'typescript';
+    editProcessor: EditProcessor;
 
-    constructor(public textEditor: vscode.TextEditor) { }
+    constructor(public textEditor: vscode.TextEditor) { 
+        this.editProcessor = new EditProcessor(this.textEditor);
+    }
 
     /**
      * Try to change abbreviation to html like syntax inside Angular's 2 typecript file.
@@ -27,11 +30,10 @@ export class EmmetActions {
             return;
         }
 
-        let editProcessor = new EditProcessor(this.textEditor);
-        let lineInfo: ILineInfo = editProcessor.lineInfo;
+        let lineInfo: ILineInfo = this.editProcessor.lineInfo;
         // just add tab
         if (!lineInfo.abbr) {
-            editProcessor.addTab(lineInfo);
+            this.editProcessor.addTab(lineInfo);
             return;
         }
 
@@ -41,15 +43,15 @@ export class EmmetActions {
                 let options = { syntax: 'html' };
 
                 let content = parser.expand(lineInfo.abbr, options);                
-                content = editProcessor.sanitizeContent(content);
+                content = this.editProcessor.sanitizeContent(content);
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
                         return data.placeholder || '';
                     }
                 });
-                editProcessor.replaceText(content, lineInfo);
+                this.editProcessor.replaceText(content, lineInfo);
             } catch(e) {
-                editProcessor.addTab(lineInfo);
+                this.editProcessor.addTab(lineInfo);
             }
         }
     }

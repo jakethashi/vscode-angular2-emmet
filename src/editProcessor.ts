@@ -37,10 +37,18 @@ export class EditProcessor {
      * 
      * @readonly
      */
-    lineInfo: ILineInfo;
+    private _lineInfo: ILineInfo;
 
-    constructor(private _editor: vscode.TextEditor) { 
-        this.lineInfo = this.getContentInfo();
+    constructor(private _editor: vscode.TextEditor) { }
+
+    /**
+     * Get information of current line. In case line is already known, return cached value. 
+     */
+    public get lineInfo() {
+        if (!this._lineInfo) {
+            this._lineInfo = this.getContentInfo();
+        }
+        return this._lineInfo;
     }
 
     /**
@@ -79,8 +87,18 @@ export class EditProcessor {
     sanitizeContent(content: string): string {
         let tabSize = Number(this._editor.options.tabSize);
         let tabCount = (this.lineInfo.abbrStartAt / tabSize);
-        var tabs = this.createSpaces((tabSize * tabCount) - tabSize);
-        return content.replace(/\n/g, '\n' + tabs);        
+        let tabs = this.createSpaces((tabSize * tabCount) - tabSize);
+        let result = content.replace(/\n/g, '\n' + tabs);
+
+        // remove tabs in case editor use spaces for indentation
+        if (this._editor.options.insertSpaces) {
+            var tab = this.createSpaces();
+            while(~result.indexOf('\t')) {
+                result = result.replace(/\t/, tab);    
+            }
+        }
+
+        return result;        
     }
 
     /**
@@ -194,6 +212,10 @@ export class EditProcessor {
     createSpaces(append?: number): string {
         append = append || 0;
         let spaces = [];
+        
+        if (!this._editor.options.insertSpaces && append === 0) {
+            return '\t'
+        }
 
         for (let i = 0; i < Number(this._editor.options.tabSize) + append; i++, spaces.push(this._editor.options.insertSpaces ? ' ' : '\t'));
         return spaces.join('');        
@@ -233,6 +255,43 @@ export class EditProcessor {
             );
             editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.abbr.length), content)            
         });
+    }
+
+    /**
+     * Insert centent iside given poisition.
+     *
+     * @param content to be inserted into position.
+     * @param position line and character representing position inside an document.
+     */
+    setText(content: string, position: vscode.Position) {
+        this._editor.edit(editBuilder => {
+            editBuilder.insert(position, content)            
+        });
+    }
+
+    /**
+     * Get text determined by selection.
+     *
+     * @param selection Range of selected area.
+     * @return Selected text. 
+     */
+    getText(selection: vscode.Selection) {
+        let response = '';
+        for (let i = selection.start.line; i <= selection.end.line; i++) {
+            let currentLine = this._editor.document.lineAt(i).text;
+            
+            // remove unwanted characters from begining of selection
+            if (i === selection.start.line) {
+                currentLine = currentLine.substring(selection.start.character);
+            }
+            // remove unwanted characters from end of selection
+            if (i === selection.end.line) {
+                currentLine = currentLine.substring(0, selection.end.character);
+            }            
+            response += currentLine;
+        }
+
+        return response;
     }
 
 }
