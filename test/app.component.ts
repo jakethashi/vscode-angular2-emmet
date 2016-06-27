@@ -8,7 +8,7 @@ declare var Component: ComponentMetadataFactory;
 
 @Component({
     selector: 'test',
-    template : `ul>li` 
+    template : `` 
 })
 class AppComponent {
     constructor() { }
