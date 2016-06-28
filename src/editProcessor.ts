@@ -192,38 +192,26 @@ export class EditProcessor {
                 let sStart = this.findLine(['\'', '"', '`'], Directions.top);
                 let sEnd = this.findLine(['\'', '"', '`'], Directions.bottom);
 
-                if (!sStart || !sEnd) {
+                // check wheter a template property is between component and biggining of quote tag
+                let sTemplate = this.findLine(['template'], Directions.top);
+                let invalid = sTemplate && dStart.line >= sTemplate.line ? true : false;
+                if (!sStart || !sEnd || invalid) {
                     return {
                         insideComponentDecorator: false
                     };
                 }
                 let isTemplateLiteral = sStart.matcher === '`';
 
-                // start and and in different
-                if (sStart.line < this._editor.selection.start.line && sEnd.line > this._editor.selection.start.line) {
-                    return {
-                        insideComponentDecorator: true,
-                        isTemplateLiteral: isTemplateLiteral
-                    };
-                }
-                // start at same but current position is after sign
-                if (sStart.line === this._editor.selection.start.line && sStart.position < this._editor.selection.start.character) {
-                    return {
-                        insideComponentDecorator: true,
-                        isTemplateLiteral: isTemplateLiteral
-                    };
-                }
-
-                // end at same but current position is before sign
-                if (sEnd.line === this._editor.selection.start.line && sEnd.position >= this._editor.selection.start.character) {
-                    return {
-                        insideComponentDecorator: true,
-                        isTemplateLiteral: isTemplateLiteral
-                    };
-                }
-
-                // start and end at same
-                if (sEnd.line === this._editor.selection.start.line && sEnd.position < this._editor.selection.start.character) {
+                if (
+                    // start and and in different
+                    sStart.line < this._editor.selection.start.line && sEnd.line > this._editor.selection.start.line ||
+                    // start at same but current position is after sign
+                    sStart.line === this._editor.selection.start.line && sStart.position < this._editor.selection.start.character ||
+                    // end at same but current position is before sign
+                    sEnd.line === this._editor.selection.start.line && sEnd.position >= this._editor.selection.start.character ||
+                    // start and end at same
+                    sEnd.line === this._editor.selection.start.line && sEnd.position < this._editor.selection.start.character
+                ) {
                     return {
                         insideComponentDecorator: true,
                         isTemplateLiteral: isTemplateLiteral
