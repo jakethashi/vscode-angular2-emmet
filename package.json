@@ -39,7 +39,8 @@
         "keybindings": [
             {
                 "command": "extension.emmetMe",
-                "key": "tab"
+                "key": "tab",
+                "when": "editorTextFocus && editorLangId == 'typescript'"
             }
         ]
     },
