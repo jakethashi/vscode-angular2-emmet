@@ -32,7 +32,7 @@ export class EmmetActions {
 
         let lineInfo: ILineInfo = this.editProcessor.lineInfo;
         // just add tab
-        if (!lineInfo.abbr) {
+        if (!lineInfo.angularInfo.abbr) {
             this.editProcessor.addTab(lineInfo);
             return;
         }
@@ -42,7 +42,7 @@ export class EmmetActions {
                 // try to get content from abbreviation
                 let options = { syntax: 'html' };
 
-                let content = parser.expand(lineInfo.abbr, options);                
+                let content = parser.expand(lineInfo.angularInfo.abbr, options);                
                 content = this.editProcessor.sanitizeContent(content, lineInfo);
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
