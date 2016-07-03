@@ -137,7 +137,7 @@ export class EditProcessor implements vscode.Disposable {
      * @param direction Determines which direction should we find.
      * @return Location inside document currently found item. 
      */
-    findLine(search: Array<string>, direction: Directions, line?: number): ILineFinding {
+    findLine(search: Array<any>, direction: Directions, line?: number): ILineFinding {
         //search = typeof search === 'string' ? [search] : search;        
         let top = direction === Directions.top;
 
@@ -180,9 +180,13 @@ export class EditProcessor implements vscode.Disposable {
         let isMultiline = this._editor.selection.end.line - this._editor.selection.start.line > 1;
 
         if (!isMultiline) {
+            // TODO: !!!
+            // consider component decorator as a json object and transform key value pairs into
+            // valid form in order to analyze it more precisely.
+
             // find position of component decorator
             let dStart = this.findLine(['@Component'], Directions.top);
-            let dEnd = this.findLine(['}'], Directions.bottom, dStart.line);
+            let dEnd = this.findLine([')'], Directions.bottom, dStart.line);
             let sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
 
             // we are inside component decorator
@@ -263,6 +267,9 @@ export class EditProcessor implements vscode.Disposable {
      *
      * @param content Html like content to replace abbreviation.
      * @param li Information how to replace abbreviation.
+     * 
+     * TODO
+     * it would be nice to place the content as snippet. 
      */
     replaceText(content: string, li: ILineInfo) {
         this._editor.edit(editBuilder => {
@@ -272,7 +279,9 @@ export class EditProcessor implements vscode.Disposable {
                     new vscode.Position(li.selection.start.line, li.selection.start.character)
                 )
             );
-            editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)            
+            editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
+
+            
         });
     }
 
