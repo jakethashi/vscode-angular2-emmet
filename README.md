@@ -17,6 +17,8 @@ Type abbreviation using [emmet](http://docs.emmet.io/abbreviations/) syntax, pre
 
 ![Use Extension](images/use-extension.gif)
 
+![Use Extension](images/use-extension2.gif)
+
 ## Features
 
 Replace abbreviation inside template property of Component decorator.
