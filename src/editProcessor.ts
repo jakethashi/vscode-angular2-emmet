@@ -185,9 +185,15 @@ export class EditProcessor implements vscode.Disposable {
             // valid form in order to analyze it more precisely.
 
             // find position of component decorator
+
             let dStart = this.findLine(['@Component'], Directions.top);
-            let dEnd = this.findLine([')'], Directions.bottom, dStart.line);
-            let sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
+            let dEnd, sTemplate;
+            if (dStart) {
+                dEnd = this.findLine([')'], Directions.bottom, dStart.line);
+            }
+            if (dStart && dEnd) {
+                sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
+            }
 
             // we are inside component decorator
             if (dStart && dEnd && dStart.line < this._editor.selection.start.line && 
