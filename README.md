@@ -25,4 +25,4 @@ Replace abbreviation inside template property of Component decorator.
 
 ## Known Issues
 
-It will break any snippet's logic e.g. looping through points of interests for I'm not yet sure how to bubble up tab key event, vscode doesn't support the same native API which would be a really useful for such cases.  
+It will break any snippet's logic inside typescript file e.g. looping through points of interests for I'm not sure how to bubble up tab key event yet, vscode doesn't support the same native API which would be a really useful for such cases.  
