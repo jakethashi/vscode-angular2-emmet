@@ -13,10 +13,14 @@ var parser = require('emmet/lib/parser/abbreviation');
  */
 export class EmmetActions {
     lang = 'typescript';
-    editProcessor: EditProcessor;
+    //editProcessor: EditProcessor;
 
-    constructor(public textEditor: vscode.TextEditor) { 
-        this.editProcessor = new EditProcessor(this.textEditor);
+    constructor(
+        public textEditor: vscode.TextEditor, 
+        public contentChange: vscode.TextDocumentContentChangeEvent,
+        public editProcessor: EditProcessor
+    ) { 
+        //this.editProcessor = new EditProcessor(this.textEditor);
     }
 
     /**
@@ -27,6 +31,10 @@ export class EmmetActions {
         //let editor = vscode.window.activeTextEditor;
         
         if (!this.textEditor) {
+            return;
+        }
+
+        if (!this.editProcessor.isTabPress(this.contentChange)) {
             return;
         }
 
@@ -49,7 +57,7 @@ export class EmmetActions {
                         return data.placeholder || '';
                     }
                 });
-                this.editProcessor.replaceText(content, lineInfo);
+                this.editProcessor.replaceText(content, lineInfo, this.contentChange);
             } catch(e) {
                 this.editProcessor.addTab(lineInfo);
             }

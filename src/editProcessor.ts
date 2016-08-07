@@ -85,6 +85,36 @@ export class EditProcessor implements vscode.Disposable {
         }
     }
 
+
+    /**
+     * 
+     *      
+     * @param contentChange holds information about the change of current document.
+     * @return true if we can continue. 
+     */
+    public isTabPress(contentChange: vscode.TextDocumentContentChangeEvent) {
+        let tabPressed;
+        if (this._editor.options.insertSpaces) {
+            tabPressed = contentChange.text.match(/ /g).length > 1;
+        } else {
+            tabPressed = contentChange.text === '\t';
+        }
+
+        if (tabPressed) {
+            // check preceding characters, it shoul't ands with a space
+            let line = this._editor.document.lineAt(contentChange.range.end.line).text
+                .substring(contentChange.range.end.character - 1);
+
+            return !line.startsWith(' ');
+        }
+        return false;
+                
+    }
+
+    public isTypescript(languageId) {
+        return languageId === 'typescript';
+    }
+
     /**
      * Alter emmet's generated content into approprite form, considers editor tabs options, which suits to current document.
      *      
@@ -138,14 +168,13 @@ export class EditProcessor implements vscode.Disposable {
      * @return Location inside document currently found item. 
      */
     findLine(search: Array<any>, direction: Directions, line?: number): ILineFinding {
-        //search = typeof search === 'string' ? [search] : search;        
         let top = direction === Directions.top;
 
         line = line || this._editor.selection.start.line;
         for (let i = line; top ? i >= 0 : i < this._editor.document.lineCount; top ? i-- : i++) {
             let currentLine = this._cachedLines[i];
             if (!currentLine) {
-                this._cachedLines[i] = currentLine = this._editor.document.lineAt(i).text;;
+                this._cachedLines[i] = currentLine = this._editor.document.lineAt(i).text;
             }             
             
             let foundItem: ILineFinding;
@@ -256,16 +285,16 @@ export class EditProcessor implements vscode.Disposable {
      * @param li Information about line.
      */
     addTab(li: ILineInfo): void {
-        var tabs = this.createSpaces();
-        this._editor.edit(editBuilder => {
-            if (li.selection.end.line - li.selection.start.line >= 1) {
-                for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
-                    editBuilder.insert(new vscode.Position(i, 0), tabs);
-                }
-            } else {
-                editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character), tabs);
-            }
-        });
+        // var tabs = this.createSpaces();
+        // this._editor.edit(editBuilder => {
+        //     if (li.selection.end.line - li.selection.start.line >= 1) {
+        //         for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
+        //             editBuilder.insert(new vscode.Position(i, 0), tabs);
+        //         }
+        //     } else {
+        //         editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character), tabs);
+        //     }
+        // });
     }
 
     /**
@@ -277,12 +306,16 @@ export class EditProcessor implements vscode.Disposable {
      * TODO
      * it would be nice to place the content as snippet. 
      */
-    replaceText(content: string, li: ILineInfo) {
+    replaceText(content: string, li: ILineInfo, contentChange: vscode.TextDocumentContentChangeEvent) {
         this._editor.edit(editBuilder => {
+            
+            // TODO: delete tab at first in order to avoid to have extra tab in case of undo will be commited
+            // TODO remove replace from undo history
+
             editBuilder.delete(
                 new vscode.Range(
                     new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
-                    new vscode.Position(li.selection.start.line, li.selection.start.character)
+                    new vscode.Position(li.selection.start.line, li.selection.start.character + contentChange.text.length)
                 )
             );
             editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)

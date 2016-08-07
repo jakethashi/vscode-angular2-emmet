@@ -12,6 +12,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as myExtension from '../src/extension';
 import { EmmetActions } from '../src/emmetActions';
+import { EditProcessor } from '../src/editProcessor';
 
 // Defines a Mocha test suite to group tests of similar kind together
 
@@ -19,7 +20,8 @@ suite("Extension Tests", () => {
 
 	test("open test case", (done) => {
 		setTimeout(() => {
-			let emmetAction = new EmmetActions(vscode.window.activeTextEditor);
+			let editProcessor = new EditProcessor(this.textEditor);
+			let emmetAction = new EmmetActions(vscode.window.activeTextEditor, null, editProcessor);
 			
 			let abbr1 = 'ul>li*3';
 			let expectedResponse = '<ul>                    <li></li>                    <li></li>                    <li></li>                </ul>';

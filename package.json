@@ -35,6 +35,14 @@
         "*"
     ],
     "main": "./out/src/extension",
+     "contributes2": {
+        "commands":
+            [{
+                "command": "extension.emmetMe",
+                "title": "Hello World"
+            }
+        ]
+    },
     "contributes": {
         "keybindings": [
             {
