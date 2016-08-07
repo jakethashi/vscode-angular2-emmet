@@ -7,28 +7,28 @@ import { EditProcessor } from './editProcessor';
 
 export function activate(context: vscode.ExtensionContext) {
     let emmetActions;
-    let disposable = vscode.commands.registerCommand('extension.emmetMe', () => {
-        let editProcessor = new EditProcessor(vscode.window.activeTextEditor);
-        emmetActions = new EmmetActions(vscode.window.activeTextEditor, null, editProcessor);
-        emmetActions.emmetMe()
-    });
-
-    // let subscriptions: vscode.Disposable[] = [];
-    // vscode.workspace.onDidChangeTextDocument(event => {
+    // let disposable = vscode.commands.registerCommand('extension.emmetMe', () => {
     //     let editProcessor = new EditProcessor(vscode.window.activeTextEditor);
-    //     let contentChange = event.contentChanges.length ? event.contentChanges[0] : null;
+    //     emmetActions = new EmmetActions(vscode.window.activeTextEditor, null, editProcessor);
+    //     emmetActions.emmetMe()
+    // });
 
-    //     if (!editProcessor.isTypescript(event.document.languageId)) {
-    //         return;
-    //     }
+    let subscriptions: vscode.Disposable[] = [];
+    vscode.workspace.onDidChangeTextDocument(event => {
+        let editProcessor = new EditProcessor(vscode.window.activeTextEditor);
+        let contentChange = event.contentChanges.length ? event.contentChanges[0] : null;
 
-    //     emmetActions = new EmmetActions(
-    //         vscode.window.activeTextEditor, 
-    //         contentChange, 
-    //         editProcessor
-    //     );
-    //     emmetActions.emmetMe();
-    // }, this, subscriptions);
+        if (!editProcessor.isTypescript(event.document.languageId)) {
+            return;
+        }
+
+        emmetActions = new EmmetActions(
+            vscode.window.activeTextEditor, 
+            contentChange, 
+            editProcessor
+        );
+        emmetActions.emmetMe();
+    }, this, subscriptions);
 
     context.subscriptions.push(emmetActions);
     //context.subscriptions.push(disposable);
