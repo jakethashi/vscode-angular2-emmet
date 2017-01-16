@@ -126,7 +126,15 @@ export class EditProcessor implements vscode.Disposable {
         abbr = abbr.replace(/template/, '');
         abbr = abbr.replace(/\s*:\s*[`|'|"]*/, '');
         abbr = abbr.replace(/(< ([^>]+)<)/g, '').replace(/\s+/g, ' ');
-        abbr = abbr.replace(/^\s\s*/, '').replace(/\s\s*$/, '');     
+        abbr = abbr.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+
+        let terms = abbr.split('>');
+        if (terms.length > 1) {
+            // combine all terms which doesnt' contain allowed character
+            abbr = terms
+                .filter((item:any) => item.trim().match(/^[a-zA-Z]+[\W^]*[\w]?$/))
+                .join('>');
+        }
         return abbr;
     }
 
@@ -137,7 +145,7 @@ export class EditProcessor implements vscode.Disposable {
      * @param direction Determines which direction should we find.
      * @return Location inside document currently found item. 
      */
-    findLine(search: Array<any>, direction: Directions, line?: number): ILineFinding {
+    findLine(search: Array<any>, direction: Directions, line?: number, offsetChar?: number): ILineFinding {
         //search = typeof search === 'string' ? [search] : search;        
         let top = direction === Directions.top;
 
@@ -145,9 +153,13 @@ export class EditProcessor implements vscode.Disposable {
         for (let i = line; top ? i >= 0 : i < this._editor.document.lineCount; top ? i-- : i++) {
             let currentLine = this._cachedLines[i];
             if (!currentLine) {
-                this._cachedLines[i] = currentLine = this._editor.document.lineAt(i).text;;
+                this._cachedLines[i] = currentLine = this._editor.document.lineAt(i).text;
             }             
-            
+
+            if (offsetChar && i === line) {
+                currentLine = currentLine.substring(offsetChar);
+            }
+
             let foundItem: ILineFinding;
 
             search.forEach(token => {
@@ -184,45 +196,56 @@ export class EditProcessor implements vscode.Disposable {
             // consider component decorator as a json object and transform key value pairs into
             // valid form in order to analyze it more precisely.
 
-            // find position of component decorator
+            let dEnd: ILineFinding, sTemplate: ILineFinding;
+            // 1. find position of component decorator
+            var dStart = this.findLine(['@Component'], Directions.top);
+            
+            // 2. find template
+            sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
 
-            let dStart = this.findLine(['@Component'], Directions.top);
-            let dEnd, sTemplate;
-            if (dStart) {
-                dEnd = this.findLine([')'], Directions.bottom, dStart.line);
-            }
-            if (dStart && dEnd) {
-                sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
-            }
+            // 3. get template type, just for now support only template literal
+            var tStart = this.findLine(['`'], Directions.bottom, sTemplate.line);
+            if (tStart) {
+                
+                dEnd = this.findLine(['`'], Directions.bottom, tStart.line, tStart.content.length + 1);
 
-            // we are inside component decorator
-            if (dStart && dEnd && dStart.line < this._editor.selection.start.line && 
-                dEnd.line > this._editor.selection.start.line &&
-                // cursor position has after template atribute
-                // TODO: check if cursor is after templates quote
-                sTemplate && sTemplate.line <= this._editor.selection.start.line) 
-            {
-                // find enclosing quote for template statement
-                let tEnd = this.findLine(['\'', '"', '`'], Directions.bottom);
+                // we are inside component decorator
+                let cursorLine = this._editor.selection.start.line;
+                if (dStart && dEnd && dStart.line < cursorLine && 
+                    dEnd.line >= cursorLine &&
+                    // cursor position has after template atribute
+                    // TODO: check if cursor is after templates quote
+                    sTemplate && sTemplate.line <= cursorLine) 
+                {
+                    // find enclosing quote for template statement
+                    let tEnd = this.findLine(['\'', '"', '`'], Directions.bottom);
+                    
+                    let line = this._editor.document.lineAt(cursorLine);
 
-                let abbrCandidate = this._editor.document.getText(
-                    new vscode.Range(
-                        new vscode.Position(this._editor.selection.start.line, 0),
-                        this._editor.selection.end
-                    ) 
-                );    
+                    let abbrCandidate = this._editor.document.getText(
+                        new vscode.Range(
+                            new vscode.Position(cursorLine, 0),
+                            this._editor.selection.end
+                        ) 
+                    );    
 
-                // TODO: extend contition from template to very first quote
-                let isTemplateLiteral = sTemplate.content.indexOf('`') >= 0;
-
-                // replace everithing which is not part of abbreviation
-                abbrCandidate = this.sanitizeAbbreviation(abbrCandidate, null);
-
-                return {
-                    insideComponentDecorator: true,
-                    isTemplateLiteral: isTemplateLiteral,
-                    abbr: abbrCandidate
-                };
+                    // compare wheter an extra characters are after cursor
+                    if (line.text.trim() === abbrCandidate.trim()) {
+        
+                        // TODO: extend contition from template to very first quote
+                        let isTemplateLiteral = sTemplate.content.indexOf('`') >= 0;
+        
+                        // replace everithing which is not part of abbreviation
+                        abbrCandidate = this.sanitizeAbbreviation(abbrCandidate, null);
+        
+                        return {
+                            insideComponentDecorator: true,
+                            isTemplateLiteral: isTemplateLiteral,
+                            abbr: abbrCandidate
+                        };
+                    }
+                }
+    
             }
         }
 
