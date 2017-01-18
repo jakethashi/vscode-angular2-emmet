@@ -197,15 +197,20 @@ export class EditProcessor implements vscode.Disposable {
             // valid form in order to analyze it more precisely.
 
             let dEnd: ILineFinding, sTemplate: ILineFinding;
-            // 1. find position of component decorator
+            // 1. find position of component decorator            
             var dStart = this.findLine(['@Component'], Directions.top);
             
             // 2. find template
-            sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
+            if (dStart) {
+                sTemplate = this.findLine(['template'], Directions.bottom, dStart.line);
+            }
 
             // 3. get template type, just for now support only template literal
-            var tStart = this.findLine(['`'], Directions.bottom, sTemplate.line);
-            if (tStart) {
+            var tStart;
+            if (sTemplate) {
+                tStart = this.findLine(['`'], Directions.bottom, sTemplate.line);
+            }
+            if (dStart && tStart) {
                 
                 dEnd = this.findLine(['`'], Directions.bottom, tStart.line, tStart.content.length + 1);
 

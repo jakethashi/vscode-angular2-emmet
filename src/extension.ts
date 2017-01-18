@@ -8,8 +8,10 @@ import { EmmetActions } from './emmetActions';
 export function activate(context: vscode.ExtensionContext) {
     let emmetActions;
     let disposable = vscode.commands.registerCommand('extension.emmetMe', () => {
-        emmetActions = new EmmetActions(vscode.window.activeTextEditor);
-        emmetActions.emmetMe()
+        try {
+            emmetActions = new EmmetActions(vscode.window.activeTextEditor);
+            emmetActions.emmetMe();
+        } catch(e) {}
     });
 
     context.subscriptions.push(emmetActions);
