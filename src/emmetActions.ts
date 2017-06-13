@@ -23,14 +23,14 @@ export class EmmetActions {
      * Try to change abbreviation to html like syntax inside Angular's 2 typecript file.
      * In case of failure or for other reason handle tab key stroke event as default. 
      */
-    emmetMe() {        
+    emmetMe() {
         //let editor = vscode.window.activeTextEditor;
         
         if (!this.textEditor) {
             return;
         }
 
-        let lineInfo: ILineInfo = this.editProcessor.lineInfo;
+        let lineInfo: ILineInfo = this.editProcessor.getLineInfo();
         // just add tab
         if (!lineInfo.angularInfo.abbr) {
             this.editProcessor.addTab(lineInfo);
@@ -43,10 +43,12 @@ export class EmmetActions {
                 let options = { syntax: 'html' };
 
                 let content = parser.expand(lineInfo.angularInfo.abbr, options);                
-                content = this.editProcessor.sanitizeContent(content, lineInfo);
+                let index = 0;
+                // content = this.editProcessor.sanitizeContent(changedText, content, lineInfo);
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
-                        return data.placeholder || '';
+                        // TODO: place for improvements, check emmet implementation
+                        return '${'+(index++) +'}';
                     }
                 });
                 this.editProcessor.replaceText(content, lineInfo);

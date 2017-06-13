@@ -4,16 +4,13 @@
 import * as vscode from 'vscode';
 import { EmmetActions } from './emmetActions';
 
-
 export function activate(context: vscode.ExtensionContext) {
-    let emmetActions;
+    let emmetActions: EmmetActions = new EmmetActions(vscode.window.activeTextEditor);
+
     let disposable = vscode.commands.registerCommand('extension.emmetMe', () => {
         try {
-            emmetActions = new EmmetActions(vscode.window.activeTextEditor);
             emmetActions.emmetMe();
         } catch(e) {}
-    });
-
-    context.subscriptions.push(emmetActions);
+    });    
     context.subscriptions.push(disposable);
 }

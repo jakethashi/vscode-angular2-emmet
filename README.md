@@ -4,7 +4,7 @@ Have you ever missed zen coding support for Angular 2 typescript files inside vs
 
 ## Installation
 
-1. Install Visual Studio Code 1.0.0 or higher
+1. Install Visual Studio Code 1.12.0 or higher
 2. Launch Code
 3. From the command palette `Ctrl`-`Shift`-`P` (Windows, Linux) or `Cmd`-`Shift`-`P` (OSX)
 4. Select `Install Extension`
@@ -25,4 +25,4 @@ Replace abbreviation inside template property of Component decorator.
 
 ## Known Issues
 
-It will break any snippet's logic inside typescript file e.g. looping through points of interests for I'm not sure how to bubble up tab key event yet, vscode doesn't support the same native API which would be a really useful for such cases.  
+There will be an extra step in undo process after emmet will be executed.  

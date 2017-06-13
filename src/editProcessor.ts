@@ -46,23 +46,20 @@ export class EditProcessor implements vscode.Disposable {
     /**
      * Get line information for Emmet transformation. 
      */
-    private _lineInfo: ILineInfo;
-
-    /**
-     * Get line information for Emmet transformation. 
-     */
     private _cachedLines: Array<string> = []; 
 
-    constructor(private _editor: vscode.TextEditor) { }
+    private prevSelection;
+
+    constructor(private _editor: vscode.TextEditor) { 
+        this.prevSelection = this._editor.selection;
+    }
 
     /**
      * Get information of current line. In case line is already known, return cached value. 
      */
-    public get lineInfo() {
-        if (!this._lineInfo) {
-            this._lineInfo = this.getContentInfo();
-        }
-        return this._lineInfo;
+    public getLineInfo(): ILineInfo {
+        this._cachedLines = [];
+        return this.getContentInfo();
     }
 
     /**
@@ -99,7 +96,7 @@ export class EditProcessor implements vscode.Disposable {
         }
 
         let tabSize = Number(this._editor.options.tabSize);
-        let tabCount = (this.lineInfo.abbrStartAt / tabSize);
+        let tabCount = (this.getLineInfo().abbrStartAt / tabSize);
         let tabs = this.createSpaces((tabSize * tabCount) - tabSize);
         let result = content.replace(/\n/g, '\n' + tabs);
 
@@ -133,6 +130,7 @@ export class EditProcessor implements vscode.Disposable {
             // combine all terms which doesnt' contain allowed character
             abbr = terms
                 .filter((item:any) => item.trim().match(/^[a-zA-Z]+[\W^]*[\w]?$/))
+                //.filter((item:any) => item.trim().match(/^[a-zA-Z#]+[\w+#{}$\s]*[\w]?$/))
                 .join('>');
         }
         return abbr;
@@ -188,13 +186,14 @@ export class EditProcessor implements vscode.Disposable {
      *      
      * @return metadata related to Angular of analyzing an abbreviation. 
      */
-    private getAngularInfo(): IAngularInfo {
+    private getAngularInfo(): IAngularInfo {        
         let isMultiline = this._editor.selection.end.line - this._editor.selection.start.line > 1;
 
         if (!isMultiline) {
             // TODO: !!!
             // consider component decorator as a json object and transform key value pairs into
             // valid form in order to analyze it more precisely.
+        
 
             let dEnd: ILineFinding, sTemplate: ILineFinding;
             // 1. find position of component decorator            
@@ -254,6 +253,8 @@ export class EditProcessor implements vscode.Disposable {
             }
         }
 
+        this.prevSelection = this._editor.selection;
+
         return {
             insideComponentDecorator: false,
             abbr: null
@@ -306,17 +307,26 @@ export class EditProcessor implements vscode.Disposable {
      * it would be nice to place the content as snippet. 
      */
     replaceText(content: string, li: ILineInfo) {
-        this._editor.edit(editBuilder => {
-            editBuilder.delete(
-                new vscode.Range(
-                    new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
-                    new vscode.Position(li.selection.start.line, li.selection.start.character)
-                )
-            );
-            editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
+       let options = vscode.window.activeTextEditor.options;
+        
+        // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
+        this._editor
+            .edit(editBuilder => {
+                editBuilder.delete(
+                    new vscode.Range(
+                        new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
+                        new vscode.Position(li.selection.start.line, li.selection.start.character)
+                    )
+                );
+            })
+            .then(() => {
+                this._editor.insertSnippet(
+                    new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
+                );
+            });
 
-            
-        });
+        
+
     }
 
     /**

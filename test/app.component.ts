@@ -8,7 +8,9 @@ declare var Component: ComponentMetadataFactory;
 
 @Component({
     selector: 'test',
-    template : `` 
+    template: `
+        ul>li*3
+    `
 })
 class AppComponent {
     constructor() { }
@@ -16,3 +18,10 @@ class AppComponent {
     ngOnInit() { }
 
 }
+
+let foo = {
+    name: 'john',
+    city: 'john',
+    age: 123
+};
+
