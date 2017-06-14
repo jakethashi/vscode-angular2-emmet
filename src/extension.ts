@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { EmmetActions } from './emmetActions';
 
 export function activate(context: vscode.ExtensionContext) {
-    let emmetActions: EmmetActions = new EmmetActions(vscode.window.activeTextEditor);
+    let emmetActions: EmmetActions = new EmmetActions();
 
     let disposable = vscode.commands.registerCommand('extension.emmetMe', () => {
         try {

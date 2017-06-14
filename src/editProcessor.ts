@@ -48,10 +48,7 @@ export class EditProcessor implements vscode.Disposable {
      */
     private _cachedLines: Array<string> = []; 
 
-    private prevSelection;
-
-    constructor(private _editor: vscode.TextEditor) { 
-        this.prevSelection = this._editor.selection;
+    constructor() { 
     }
 
     /**
@@ -70,14 +67,14 @@ export class EditProcessor implements vscode.Disposable {
 
         if (!angularInfo.insideComponentDecorator) {            
             return {
-                selection: this._editor.selection,
+                selection: vscode.window.activeTextEditor.selection,
                 angularInfo: angularInfo
             }
         }
 
         return {
-            selection: this._editor.selection,
-            abbrStartAt: this._editor.selection.start.character - angularInfo.abbr.length,
+            selection: vscode.window.activeTextEditor.selection,
+            abbrStartAt: vscode.window.activeTextEditor.selection.start.character - angularInfo.abbr.length,
             angularInfo: angularInfo
         }
     }
@@ -95,13 +92,13 @@ export class EditProcessor implements vscode.Disposable {
             return content.replace(/[\n|\t]/g, '');
         }
 
-        let tabSize = Number(this._editor.options.tabSize);
+        let tabSize = Number(vscode.window.activeTextEditor.options.tabSize);
         let tabCount = (this.getLineInfo().abbrStartAt / tabSize);
         let tabs = this.createSpaces((tabSize * tabCount) - tabSize);
         let result = content.replace(/\n/g, '\n' + tabs);
 
         // remove tabs in case editor use spaces for indentation
-        if (this._editor.options.insertSpaces) {
+        if (vscode.window.activeTextEditor.options.insertSpaces) {
             var tab = this.createSpaces();
             while(~result.indexOf('\t')) {
                 result = result.replace(/\t/, tab);    
@@ -147,11 +144,11 @@ export class EditProcessor implements vscode.Disposable {
         //search = typeof search === 'string' ? [search] : search;        
         let top = direction === Directions.top;
 
-        line = line || this._editor.selection.start.line;
-        for (let i = line; top ? i >= 0 : i < this._editor.document.lineCount; top ? i-- : i++) {
+        line = line || vscode.window.activeTextEditor.selection.start.line;
+        for (let i = line; top ? i >= 0 : i < vscode.window.activeTextEditor.document.lineCount; top ? i-- : i++) {
             let currentLine = this._cachedLines[i];
             if (!currentLine) {
-                this._cachedLines[i] = currentLine = this._editor.document.lineAt(i).text;
+                this._cachedLines[i] = currentLine = vscode.window.activeTextEditor.document.lineAt(i).text;
             }             
 
             if (offsetChar && i === line) {
@@ -187,7 +184,7 @@ export class EditProcessor implements vscode.Disposable {
      * @return metadata related to Angular of analyzing an abbreviation. 
      */
     private getAngularInfo(): IAngularInfo {        
-        let isMultiline = this._editor.selection.end.line - this._editor.selection.start.line > 1;
+        let isMultiline = vscode.window.activeTextEditor.selection.end.line - vscode.window.activeTextEditor.selection.start.line > 1;
 
         if (!isMultiline) {
             // TODO: !!!
@@ -214,7 +211,7 @@ export class EditProcessor implements vscode.Disposable {
                 dEnd = this.findLine(['`'], Directions.bottom, tStart.line, tStart.content.length + 1);
 
                 // we are inside component decorator
-                let cursorLine = this._editor.selection.start.line;
+                let cursorLine = vscode.window.activeTextEditor.selection.start.line;
                 if (dStart && dEnd && dStart.line < cursorLine && 
                     dEnd.line >= cursorLine &&
                     // cursor position has after template atribute
@@ -224,12 +221,12 @@ export class EditProcessor implements vscode.Disposable {
                     // find enclosing quote for template statement
                     let tEnd = this.findLine(['\'', '"', '`'], Directions.bottom);
                     
-                    let line = this._editor.document.lineAt(cursorLine);
+                    let line = vscode.window.activeTextEditor.document.lineAt(cursorLine);
 
-                    let abbrCandidate = this._editor.document.getText(
+                    let abbrCandidate = vscode.window.activeTextEditor.document.getText(
                         new vscode.Range(
                             new vscode.Position(cursorLine, 0),
-                            this._editor.selection.end
+                            vscode.window.activeTextEditor.selection.end
                         ) 
                     );    
 
@@ -253,8 +250,6 @@ export class EditProcessor implements vscode.Disposable {
             }
         }
 
-        this.prevSelection = this._editor.selection;
-
         return {
             insideComponentDecorator: false,
             abbr: null
@@ -271,11 +266,11 @@ export class EditProcessor implements vscode.Disposable {
         append = append || 0;
         let spaces = [];
         
-        if (!this._editor.options.insertSpaces && append === 0) {
+        if (!vscode.window.activeTextEditor.options.insertSpaces && append === 0) {
             return '\t'
         }
 
-        for (let i = 0; i < Number(this._editor.options.tabSize) + append; i++, spaces.push(this._editor.options.insertSpaces ? ' ' : '\t'));
+        for (let i = 0; i < Number(vscode.window.activeTextEditor.options.tabSize) + append; i++, spaces.push(vscode.window.activeTextEditor.options.insertSpaces ? ' ' : '\t'));
         return spaces.join('');        
     }
 
@@ -286,7 +281,7 @@ export class EditProcessor implements vscode.Disposable {
      */
     addTab(li: ILineInfo): void {
         var tabs = this.createSpaces();
-        this._editor.edit(editBuilder => {
+        vscode.window.activeTextEditor.edit(editBuilder => {
             if (li.selection.end.line - li.selection.start.line >= 1) {
                 for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
                     editBuilder.insert(new vscode.Position(i, 0), tabs);
@@ -310,7 +305,7 @@ export class EditProcessor implements vscode.Disposable {
        let options = vscode.window.activeTextEditor.options;
         
         // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
-        this._editor
+        vscode.window.activeTextEditor
             .edit(editBuilder => {
                 editBuilder.delete(
                     new vscode.Range(
@@ -320,7 +315,7 @@ export class EditProcessor implements vscode.Disposable {
                 );
             })
             .then(() => {
-                this._editor.insertSnippet(
+                vscode.window.activeTextEditor.insertSnippet(
                     new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
                 );
             });
@@ -336,7 +331,7 @@ export class EditProcessor implements vscode.Disposable {
      * @param position line and character representing position inside an document.
      */
     setText(content: string, position: vscode.Position) {
-        this._editor.edit(editBuilder => {
+        vscode.window.activeTextEditor.edit(editBuilder => {
             editBuilder.insert(position, content)            
         });
     }
@@ -350,7 +345,7 @@ export class EditProcessor implements vscode.Disposable {
     getText(selection: vscode.Selection) {
         let response = '';
         for (let i = selection.start.line; i <= selection.end.line; i++) {
-            let currentLine = this._editor.document.lineAt(i).text;
+            let currentLine = vscode.window.activeTextEditor.document.lineAt(i).text;
             
             // remove unwanted characters from begining of selection
             if (i === selection.start.line) {

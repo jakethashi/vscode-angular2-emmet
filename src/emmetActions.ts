@@ -15,8 +15,8 @@ export class EmmetActions {
     lang = 'typescript';
     editProcessor: EditProcessor;
 
-    constructor(public textEditor: vscode.TextEditor) { 
-        this.editProcessor = new EditProcessor(this.textEditor);
+    constructor() { 
+        this.editProcessor = new EditProcessor();
     }
 
     /**
@@ -26,7 +26,7 @@ export class EmmetActions {
     emmetMe() {
         //let editor = vscode.window.activeTextEditor;
         
-        if (!this.textEditor) {
+        if (!vscode.window.activeTextEditor) {
             return;
         }
 
@@ -37,14 +37,13 @@ export class EmmetActions {
             return;
         }
 
-        if (this.textEditor.document.languageId === this.lang) {
+        if (vscode.window.activeTextEditor.document.languageId === this.lang) {
             try {
                 // try to get content from abbreviation
                 let options = { syntax: 'html' };
 
                 let content = parser.expand(lineInfo.angularInfo.abbr, options);                
-                let index = 0;
-                // content = this.editProcessor.sanitizeContent(changedText, content, lineInfo);
+                let index = 1;
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
                         // TODO: place for improvements, check emmet implementation
