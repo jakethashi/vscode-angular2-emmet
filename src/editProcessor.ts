@@ -122,13 +122,21 @@ export class EditProcessor implements vscode.Disposable {
         abbr = abbr.replace(/(< ([^>]+)<)/g, '').replace(/\s+/g, ' ');
         abbr = abbr.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 
-        let terms = abbr.split('>');
-        if (terms.length > 1) {
-            // combine all terms which doesnt' contain allowed character
-            abbr = terms
-                .filter((item:any) => item.trim().match(/^[a-zA-Z]+[\W^]*[\w]?$/))
-                //.filter((item:any) => item.trim().match(/^[a-zA-Z#]+[\w+#{}$\s]*[\w]?$/))
-                .join('>');
+        let parts = abbr.split('>');
+        if (parts.length > 1) {
+            // combine all parts which doesnt' contain allowed character
+
+            // get valid emmet parts in reverse order
+            let response = [];
+            for (let index = parts.length - 1; index >= 0; index--) {
+                let part = parts[index];
+                if (!part.match(/^[a-zA-Z 0-9\.\,\+\-\@\^\*\(\)#\[\]\=\$\{\}]*$/)) {
+                    break;
+                }
+                response.push(part);
+            }
+            
+            abbr = response.reverse().join('>');
         }
         return abbr;
     }
@@ -230,21 +238,18 @@ export class EditProcessor implements vscode.Disposable {
                         ) 
                     );    
 
-                    // compare wheter an extra characters are after cursor
-                    if (line.text.trim() === abbrCandidate.trim()) {
-        
-                        // TODO: extend contition from template to very first quote
-                        let isTemplateLiteral = sTemplate.content.indexOf('`') >= 0;
-        
-                        // replace everithing which is not part of abbreviation
-                        abbrCandidate = this.sanitizeAbbreviation(abbrCandidate, null);
-        
-                        return {
-                            insideComponentDecorator: true,
-                            isTemplateLiteral: isTemplateLiteral,
-                            abbr: abbrCandidate
-                        };
-                    }
+                    // we sould be able to create emmet in every place in text
+                    // TODO: extend contition from template to very first quote
+                    let isTemplateLiteral = sTemplate.content.indexOf('`') >= 0;
+    
+                    // replace everithing which is not part of abbreviation
+                    abbrCandidate = this.sanitizeAbbreviation(abbrCandidate, null);
+    
+                    return {
+                        insideComponentDecorator: true,
+                        isTemplateLiteral: isTemplateLiteral,
+                        abbr: abbrCandidate
+                    };
                 }
     
             }
@@ -307,18 +312,28 @@ export class EditProcessor implements vscode.Disposable {
         // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
         vscode.window.activeTextEditor
             .edit(editBuilder => {
+
                 editBuilder.delete(
                     new vscode.Range(
                         new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
                         new vscode.Position(li.selection.start.line, li.selection.start.character)
                     )
                 );
-            })
-            .then(() => {
-                vscode.window.activeTextEditor.insertSnippet(
-                    new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
-                );
+                editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
+
+                // TODO: disable insert of snippet until undo issue will be solved
+                // editBuilder.delete(
+                //     new vscode.Range(
+                //         new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
+                //         new vscode.Position(li.selection.start.line, li.selection.start.character)
+                //     )
+                // );
             });
+            // .then(() => {
+            //     vscode.window.activeTextEditor.insertSnippet(
+            //         new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
+            //     );
+            // });
 
         
 

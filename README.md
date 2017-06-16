@@ -25,4 +25,3 @@ Replace abbreviation inside template property of Component decorator.
 
 ## Known Issues
 
-There will be an extra step in undo process after emmet will be executed.  

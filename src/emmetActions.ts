@@ -42,14 +42,23 @@ export class EmmetActions {
                 // try to get content from abbreviation
                 let options = { syntax: 'html' };
 
+
                 let content = parser.expand(lineInfo.angularInfo.abbr, options);                
-                let index = 1;
+                content = this.editProcessor.sanitizeContent(content, lineInfo);
                 content = tabStops.processText(content, {
                     tabstop: function(data) {
-                        // TODO: place for improvements, check emmet implementation
-                        return '${'+(index++) +'}';
+                        return data.placeholder || '';
                     }
                 });
+
+                // let content = parser.expand(lineInfo.angularInfo.abbr, options);                
+                // let index = 1;
+                // content = tabStops.processText(content, {
+                //     tabstop: function(data) {
+                //         // TODO: place for improvements, check emmet implementation
+                //         return '${'+(index++) +'}';
+                //     }
+                // });
                 this.editProcessor.replaceText(content, lineInfo);
             } catch(e) {
                 this.editProcessor.addTab(lineInfo);

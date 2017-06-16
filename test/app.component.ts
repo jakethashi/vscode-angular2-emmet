@@ -6,10 +6,13 @@ export interface ComponentMetadataFactory {
 }
 declare var Component: ComponentMetadataFactory;
 
+// .wrap>p>a^p
+// (.one>h1)+(.two>h1)
+
 @Component({
     selector: 'test',
     template: `
-        ul>li*3
+        (.one>h1)+(.two>h1)
     `
 })
 class AppComponent {
@@ -24,4 +27,3 @@ let foo = {
     city: 'john',
     age: 123
 };
-
