@@ -8,11 +8,12 @@ declare var Component: ComponentMetadataFactory;
 
 // .wrap>p>a^p
 // (.one>h1)+(.two>h1)
+// ul.list>li[class='test_$$']*5>lorem4
 
 @Component({
     selector: 'test',
     template: `
-        (.one>h1)+(.two>h1)
+        ul.list>li[class='test_$$']*5>lorem4
     `
 })
 class AppComponent {

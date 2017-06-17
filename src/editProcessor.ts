@@ -130,10 +130,14 @@ export class EditProcessor implements vscode.Disposable {
             let response = [];
             for (let index = parts.length - 1; index >= 0; index--) {
                 let part = parts[index];
-                if (!part.match(/^[a-zA-Z 0-9\.\,\+\-\@\^\*\(\)#\[\]\=\$\{\}]*$/)) {
+                // replace content between two quotes
+                part = part.replace(/"([^"]+)"/g, '""');
+                part = part.replace(/'([^']+)'/g, '\'\'');
+
+                if (!part.match(/^[a-zA-Z 0-9\.\,\+\-\@\^\*\(\)#\[\]\=\$\{\}\'\"\_]*$/)) {
                     break;
                 }
-                response.push(part);
+                response.push(parts[index]);
             }
             
             abbr = response.reverse().join('>');
