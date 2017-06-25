@@ -13,7 +13,13 @@ declare var Component: ComponentMetadataFactory;
 @Component({
     selector: 'test',
     template: `
-         ul.list>li[class='test_$$']*5>{item_$$}
+         <ul class="list">
+             <li class="test_01">item_01</li>
+             <li class="test_02">item_02</li>
+             <li class="test_03">item_03</li>
+             <li class="test_04">item_04</li>
+             <li class="test_05">item_05</li>
+         </ul>
     `
 })
 class AppComponent {

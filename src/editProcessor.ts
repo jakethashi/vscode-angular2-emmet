@@ -288,16 +288,21 @@ export class EditProcessor implements vscode.Disposable {
      *
      * @param li Information about line.
      */
-    addTab(li: ILineInfo): void {
-        var tabs = this.createSpaces();
-        vscode.window.activeTextEditor.edit(editBuilder => {
-            if (li.selection.end.line - li.selection.start.line >= 1) {
-                for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
-                    editBuilder.insert(new vscode.Position(i, 0), tabs);
+    addTab(li: ILineInfo) {
+        return new Promise(resolve => {
+            var tabs = this.createSpaces();
+            vscode.window.activeTextEditor.edit(editBuilder => {
+                if (li.selection.end.line - li.selection.start.line >= 1) {
+                    for (let i = li.selection.start.line; i <= li.selection.end.line; i++) {
+                        editBuilder.insert(new vscode.Position(i, 0), tabs);
+                    }
+                } else {
+                    editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character), tabs);
                 }
-            } else {
-                editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character), tabs);
-            }
+            })
+            .then(() => {
+                resolve();
+            })
         });
     }
 
@@ -311,35 +316,37 @@ export class EditProcessor implements vscode.Disposable {
      * it would be nice to place the content as snippet. 
      */
     replaceText(content: string, li: ILineInfo) {
-       let options = vscode.window.activeTextEditor.options;
-        
-        // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
-        vscode.window.activeTextEditor
-            .edit(editBuilder => {
-
-                editBuilder.delete(
-                    new vscode.Range(
-                        new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
-                        new vscode.Position(li.selection.start.line, li.selection.start.character)
-                    )
-                );
-                editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
-
-                // TODO: disable insert of snippet until undo issue will be solved
-                // editBuilder.delete(
-                //     new vscode.Range(
-                //         new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
-                //         new vscode.Position(li.selection.start.line, li.selection.start.character)
-                //     )
-                // );
-            });
-            // .then(() => {
-            //     vscode.window.activeTextEditor.insertSnippet(
-            //         new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
-            //     );
-            // });
-
-        
+        return new Promise(resolve => {
+            let options = vscode.window.activeTextEditor.options;
+            
+            // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
+            vscode.window.activeTextEditor
+                .edit(editBuilder => {
+    
+                    editBuilder.delete(
+                        new vscode.Range(
+                            new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
+                            new vscode.Position(li.selection.start.line, li.selection.start.character)
+                        )
+                    );
+                    editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
+                    // TODO: disable insert of snippet until undo issue will be solved
+                    // editBuilder.delete(
+                    //     new vscode.Range(
+                    //         new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
+                    //         new vscode.Position(li.selection.start.line, li.selection.start.character)
+                    //     )
+                    // );
+                }).then(() => {
+                    resolve();
+                })
+                // .then(() => {
+                //     vscode.window.activeTextEditor.insertSnippet(
+                //         new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
+                //     );
+                // });
+    
+        });
 
     }
 

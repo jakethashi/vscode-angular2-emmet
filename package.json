@@ -35,15 +35,15 @@
     "*"
   ],
   "main": "./out/src/extension",
-  "contributes": {    
+  "contributes": {
     "keybindings": [
-            {
-                "command": "extension.emmetMe",
-                "key": "tab",
-                "when": "editorTextFocus && editorLangId == 'typescript' && !suggestWidgetVisible && !inSnippetMode"
-            }
-        ]   
-  },  
+      {
+        "command": "extension.emmetMe",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == 'typescript' && !suggestWidgetVisible && !inSnippetMode"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",

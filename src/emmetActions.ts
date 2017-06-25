@@ -59,12 +59,14 @@ export class EmmetActions {
                 //         return '${'+(index++) +'}';
                 //     }
                 // });
-                this.editProcessor.replaceText(content, lineInfo);
+                return this.editProcessor.replaceText(content, lineInfo);
             } catch(e) {
-                this.editProcessor.addTab(lineInfo);
+                return this.editProcessor.addTab(lineInfo);
             }
         }
     }
+
+    
 
     dispose() {
         
