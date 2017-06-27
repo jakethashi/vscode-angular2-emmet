@@ -322,14 +322,14 @@ export class EditProcessor implements vscode.Disposable {
             // TODO: disable undo with , { undoStopBefore: false, undoStopAfter: false }
             vscode.window.activeTextEditor
                 .edit(editBuilder => {
-    
                     editBuilder.delete(
                         new vscode.Range(
                             new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), 
                             new vscode.Position(li.selection.start.line, li.selection.start.character)
                         )
                     );
-                    editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
+
+                    //editBuilder.insert(new vscode.Position(li.selection.start.line, li.selection.start.character - li.angularInfo.abbr.length), content)
                     // TODO: disable insert of snippet until undo issue will be solved
                     // editBuilder.delete(
                     //     new vscode.Range(
@@ -337,14 +337,16 @@ export class EditProcessor implements vscode.Disposable {
                     //         new vscode.Position(li.selection.start.line, li.selection.start.character)
                     //     )
                     // );
+                    
+                }, { undoStopBefore: true, undoStopAfter: true })
+                .then(() => {
+                    return vscode.window.activeTextEditor.insertSnippet(
+                        new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character),
+                        { undoStopBefore: true, undoStopAfter: true }
+                    );
                 }).then(() => {
                     resolve();
-                })
-                // .then(() => {
-                //     vscode.window.activeTextEditor.insertSnippet(
-                //         new vscode.SnippetString(content), new vscode.Position(li.selection.start.line, li.selection.start.character)
-                //     );
-                // });
+                });
     
         });
 

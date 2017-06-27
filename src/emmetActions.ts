@@ -33,8 +33,7 @@ export class EmmetActions {
         let lineInfo: ILineInfo = this.editProcessor.getLineInfo();
         // just add tab
         if (!lineInfo.angularInfo.abbr) {
-            this.editProcessor.addTab(lineInfo);
-            return;
+            return this.editProcessor.addTab(lineInfo);
         }
 
         if (vscode.window.activeTextEditor.document.languageId === this.lang) {
@@ -43,22 +42,22 @@ export class EmmetActions {
                 let options = { syntax: 'html' };
 
 
-                let content = parser.expand(lineInfo.angularInfo.abbr, options);                
-                content = this.editProcessor.sanitizeContent(content, lineInfo);
-                content = tabStops.processText(content, {
-                    tabstop: function(data) {
-                        return data.placeholder || '';
-                    }
-                });
-
                 // let content = parser.expand(lineInfo.angularInfo.abbr, options);                
-                // let index = 1;
+                // content = this.editProcessor.sanitizeContent(content, lineInfo);
                 // content = tabStops.processText(content, {
                 //     tabstop: function(data) {
-                //         // TODO: place for improvements, check emmet implementation
-                //         return '${'+(index++) +'}';
+                //         return data.placeholder || '';
                 //     }
                 // });
+
+                let content = parser.expand(lineInfo.angularInfo.abbr, options);                
+                let index = 1;
+                content = tabStops.processText(content, {
+                    tabstop: function(data) {
+                        // TODO: place for improvements, check emmet implementation
+                        return '${'+(index++) +'}';
+                    }
+                });
                 return this.editProcessor.replaceText(content, lineInfo);
             } catch(e) {
                 return this.editProcessor.addTab(lineInfo);
