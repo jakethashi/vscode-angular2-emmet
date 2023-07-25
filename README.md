@@ -1,3 +1,6 @@
+⛔️ DEPRECATED
+I sincerely apologize, but this repository has been deprecated.
+
 # Angular 2 TypeScript Emmet suport for VS Code
 
 Have you ever missed zen coding support for Angular 2 typescript files inside vscode? If is your answer yes then following extension to Visual Studio Code solve you issue.
